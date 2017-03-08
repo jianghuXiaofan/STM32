@@ -50,7 +50,7 @@
           <OutputName>Template</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>1</CreateHexFile>
+          <CreateHexFile>0</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\Listings\</ListingPath>
@@ -487,6 +487,16 @@
               <FileType>1</FileType>
               <FilePath>..\DRIVER\src\bsp_relay.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_usart2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DRIVER\src\bsp_usart2.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_timer2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DRIVER\src\bsp_timer2.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -576,6 +586,11 @@
               <FileName>send_data.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\SendData\send_data.c</FilePath>
+            </File>
+            <File>
+              <FileName>receive_data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\SendData\receive_data.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -315,6 +315,9 @@ exit:
 	return rc;
 }
 
+
+
+
 /**
  * Decodes the message length according to the MQTT algorithm, non-blocking
  * @param trp pointer to a transport structure holding what is needed to solve getting data from it

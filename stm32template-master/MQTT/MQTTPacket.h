@@ -114,6 +114,7 @@ void writeMQTTString(unsigned char** pptr, MQTTString mqttstring);
 
 DLLExport int MQTTPacket_read(unsigned char* buf, int buflen, int (*getfn)(unsigned char*, int));
 
+
 typedef struct {
 	int (*getfn)(void *, unsigned char*, int); /* must return -1 for error, 0 for call again, or the number of bytes read */
 	void *sck;	/* pointer to whatever the system may use to identify the transport */

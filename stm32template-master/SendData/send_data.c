@@ -1,6 +1,6 @@
 #include "send_data.h"
-//这个下面是通过 MQTT 发送数据包的
 
+//这个下面是通过 MQTT 发送数据包的
 void Send_pack(MsgPack *pack)
 {
 	//MQTT 相关初始化设置
