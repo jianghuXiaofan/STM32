@@ -4,13 +4,10 @@
 #include <stdlib.h>
 #include "bsp_timer2.h"
 /////////////////////////////////////////////////////////
-//串口2中断服务程序
+
   	
 volatile u8 USART2_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
-extern volatile u16 rx_buf_len;
-
-
-
+extern volatile u16 rx_buf_len;               //串口2 接收FIFO计数值
 
 
 //串口2的初始化 baudrate 是波特率
@@ -33,8 +30,7 @@ void Usart2_Init(uint32_t baudrate)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//端口配置
 	GPIO_Init(GPIOA,&GPIO_InitStructure);
     
-    //USART2接收中断 组和中断优先级
-
+    //USART2接收中断组和中断优先级
 	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -64,7 +60,7 @@ void USART2_IRQHandler(void)
         TIM_Cmd(TIM2, DISABLE);
         USART_ClearITPendingBit(USART2,USART_IT_RXNE); 
         USART2_RX_BUF[rx_buf_len] = USART_ReceiveData(USART2);
-        rx_buf_len++;
+        rx_buf_len++; //串口2接收FIFO计数值加1
         
         TIM_SetCounter(TIM2, 0);
         TIM_ITConfig(  //使能或者失能指定的TIM中断
@@ -83,7 +79,7 @@ void USART2_Putc(unsigned char c)
 	USART_SendData(USART2, c);
 	while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET );
 }
-
+//串口2 发送字符串 
 void usart2_send_nbyte(unsigned char *str, int len)
 {
 	int i;

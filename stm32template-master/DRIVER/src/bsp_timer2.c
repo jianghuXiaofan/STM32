@@ -2,8 +2,8 @@
 #include "bsp_usart2.h"
 
 extern volatile u8 USART2_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
-extern volatile u16 USART2_RX_OK_FLAG;//接收完成标志
-extern volatile u16 rx_buf_len;//接收到的数据长度
+extern volatile u16 USART2_RX_OK_FLAG;               //接收完成标志
+extern volatile u16 rx_buf_len;                      //串口2 接收FIFO计数值
 
 void TIM2_Int_Init(u16 arr,u16 psc)
 {
@@ -31,7 +31,7 @@ void TIM2_Int_Init(u16 arr,u16 psc)
 	NVIC_Init(&NVIC_InitStructure);  //根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器
 
 	//TIM_Cmd(TIM2, ENABLE);  //使能TIMx外设
-    TIM_Cmd(TIM2, DISABLE);//timer2 里面
+    TIM_Cmd(TIM2, DISABLE);//timer2 里面 使能TIMx外设
 }
 
 //定时器中断 
@@ -42,13 +42,14 @@ void TIM2_IRQHandler(void)   //TIM2中断
 	{
 		TIM_ClearITPendingBit(TIM2, TIM_FLAG_Update);//TIM_FLAG_Update  //清除TIMx的中断待处理位:TIM 中断源 
         USART2_RX_OK_FLAG = 1;
-//        for(int i=0;i<rx_buf_len;i++)
+//        for(int i=0;i<rx_buf_len;i++) {
 //        printf("%02x ",USART2_RX_BUF[i]);
-        //printf("%c ",USART2_RX_BUF[i]);
+//        printf("%c ",USART2_RX_BUF[i]);
+//        }
         TIM_ITConfig(  //使能或者失能指定的TIM中断
 		TIM2, //TIM2
 		TIM_IT_Update,
-		DISABLE  //使能
+		DISABLE  //失能
 		);
         TIM_Cmd(TIM2, DISABLE);
 	}

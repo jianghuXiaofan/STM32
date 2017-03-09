@@ -12,12 +12,14 @@
 #include "bsp_relay.h"
 #include "receive_data.h"
 #include "bsp_timer2.h"
-extern volatile u8 USART2_RX_BUF[USART_REC_LEN];
-volatile u16 rx_buf_len = 0;
-volatile u16 USART2_RX_OK_FLAG=0;//接收完成标志
+#include "bsp_timer3.h"
+extern volatile u8 USART2_RX_BUF[USART_REC_LEN];    //接收缓冲,最大USART_REC_LEN个字节.
+volatile u16 rx_buf_len = 0;        //串口2 接收FIFO计数值
+volatile u16 USART2_RX_OK_FLAG=0;   //接收完成标志
 
-//实现目的 读取DHT11的温湿度 JSON格式经过MQTT发送
-
+//实现目的 读取DHT11的温湿度 JSON格式经过MQTT发送到服务器
+//从服务器订阅消息 解析执行响应相应的行为
+//目前小bug 为什么要手动复位一下，要改
 int main(void)
 {
 	//DHT11_Data_TypeDef DHT11_Data = {0,0,0,0,0};
@@ -31,7 +33,8 @@ int main(void)
 	Usart2_Init(115200);
     Dht11_Init();//DHT11温湿度传感器初始化
     relayInit();//继电器初始化     
-    TIM2_Int_Init(4999,7199);//10Khz的计数频率，计数到5000为500ms 
+    TIM2_Int_Init(999,7199);//10Khz的计数频率，计数到500为50ms
+    TIM3_Int_Init(4999,7199);//10Khz的计数频率，计数到5000为500ms
     delay_ms(500);
 	for(;;)
 	{	        
