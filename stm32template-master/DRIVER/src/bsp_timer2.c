@@ -1,7 +1,7 @@
 #include "bsp_timer2.h"
 #include "bsp_usart2.h"
 
-extern volatile u8 USART2_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
+extern u8 USART2_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 extern volatile u16 USART2_RX_OK_FLAG;               //接收完成标志
 extern volatile u16 rx_buf_len;                      //串口2 接收FIFO计数值
 

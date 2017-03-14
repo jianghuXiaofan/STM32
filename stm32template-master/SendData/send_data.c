@@ -5,7 +5,6 @@ void Send_pack(MsgPack *pack)
 {
 	//MQTT 相关初始化设置
     MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
-	//int rc = 0;
 	char buf[200]; //存放mqtt发送信息
 	int buflen = sizeof(buf);
 	MQTTString topicString = MQTTString_initializer;
@@ -17,7 +16,7 @@ void Send_pack(MsgPack *pack)
 	data.password.cstring = "";
 	data.MQTTVersion = 4; //版本号 3 = 3.1 4 = 3.1.1
     
-    topicString.cstring = "lalala";//这里修改topic 
+    topicString.cstring = "lwz";//这里修改topic 
     
 /***************************************************************/
     //将温湿度打包发送以JSON格式处理
@@ -26,9 +25,12 @@ void Send_pack(MsgPack *pack)
     cJSON_AddNumberToObject(root,"temp",pack->temp_int);
     cJSON_AddNumberToObject(root,"humi",pack->humi_int);
     char *out = cJSON_Print(root);
-    //printf("%s\r\n",out);
-    cJSON_Delete(root);	
-    free(out);//因此这里要记得释放
+    printf("%s\r\n",out);
+    if(out!=NULL)
+    {
+        cJSON_Delete(root);
+        if(root!=NULL) free(out);//因此这里要记得释放
+    }
     
 /***************************************************************/   
     //MQTT 协议发送

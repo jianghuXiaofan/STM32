@@ -70,6 +70,7 @@ int MQTTPacket_decode(int (*getcharfn)(unsigned char*, int), int* value)
 			goto exit;
 		}
 		rc = (*getcharfn)(&c, 1);
+
 		if (rc != 1)
 			goto exit;
 		*value += (c & 127) * multiplier;
@@ -302,7 +303,7 @@ int MQTTPacket_read(unsigned char* buf, int buflen, int (*getfn)(unsigned char*,
 	/* 2. read the remaining length.  This is variable in itself */
 	MQTTPacket_decode(getfn, &rem_len);
 	len += MQTTPacket_encode(buf + 1, rem_len); /* put the original remaining length back into the buffer */
-
+    
 	/* 3. read the rest of the buffer using a callback to supply the rest of the data */
 	if((rem_len + len) > buflen)
 		goto exit;
@@ -311,6 +312,7 @@ int MQTTPacket_read(unsigned char* buf, int buflen, int (*getfn)(unsigned char*,
 
 	header.byte = buf[0];
 	rc = header.bits.type;
+//    printf("rc = %d\n",rc);
 exit:
 	return rc;
 }

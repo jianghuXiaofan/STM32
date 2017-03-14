@@ -2,6 +2,7 @@
 #include "MQTTPacket.h"
 #include "transport.h"
 #include "package.h"
+
 void TIM3_Int_Init(u16 arr,u16 psc)
 {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
@@ -14,7 +15,8 @@ void TIM3_Int_Init(u16 arr,u16 psc)
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
     TIM_TimeBaseInit(TIM3,&TIM_TimeBaseStructure);
     
-    TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);
+    TIM_ITConfig(TIM3,TIM_IT_Update,DISABLE);
+    //TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);
     
     NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
@@ -26,23 +28,21 @@ void TIM3_Int_Init(u16 arr,u16 psc)
 }
 
 //定时器中断 
+
 void TIM3_IRQHandler(void)
 {
     int len = 0;
     int rc = 0;
-    static int i = 0;
     if(TIM_GetITStatus(TIM3,TIM_IT_Update) != RESET)
     {
         TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
         //send ping heart package
-        i++;
-        if(i>=3){
-        i = 0;
-        char buf[20]; //存放mqtt发送信息
+
+        char buf[20]="\0"; //存放mqtt发送信息
         int buflen = sizeof(buf);
         len = MQTTSerialize_pingreq((unsigned char*)buf, buflen);
         rc = transport_sendPacketBuffer((unsigned char*)buf, len);
-        }
+       
     }
 }
 
