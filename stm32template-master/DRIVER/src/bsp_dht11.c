@@ -1,35 +1,36 @@
 #include "bsp_dht11.h"
 #include "timer.h"
 #include "bsp_usart.h"
+
 void Dht11_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE); 
+	RCC_APB2PeriphClockCmd(DHT11_CLK, ENABLE); 
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Pin = DHT11_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	
-	GPIO_Init(GPIOB,&GPIO_InitStructure);
+	GPIO_Init(DHT11_PORT,&GPIO_InitStructure);
 	
-	GPIO_SetBits(GPIOB,GPIO_Pin_10);
+	GPIO_SetBits(DHT11_PORT,DHT11_PIN);
 }
 
 static void DHT11_Mode_IPU(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Pin = DHT11_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_Init(GPIOB,&GPIO_InitStructure);
+	GPIO_Init(DHT11_PORT,&GPIO_InitStructure);
 }
 
 static void DHT11_Mode_Out_PP(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Pin = DHT11_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB,&GPIO_InitStructure);
+	GPIO_Init(DHT11_PORT,&GPIO_InitStructure);
 }
 
 static uint8_t Read_Byte(void)
@@ -52,9 +53,9 @@ static uint8_t Read_Byte(void)
 uint8_t Read_DHT11(DHT11_Data_TypeDef * DHT11_Data)
 {
 	DHT11_Mode_Out_PP();
-	GPIO_ResetBits(GPIOB,GPIO_Pin_10);
+	GPIO_ResetBits(DHT11_PORT,DHT11_PIN);
 	delay_ms(20);//²»Ð¡ÓÚ18ms
-	GPIO_SetBits(GPIOB,GPIO_Pin_10);
+	GPIO_SetBits(DHT11_PORT,DHT11_PIN);
 	delay_us(30);
 	
 	DHT11_Mode_IPU();
@@ -69,17 +70,17 @@ uint8_t Read_DHT11(DHT11_Data_TypeDef * DHT11_Data)
 		DHT11_Data->temp_deci = Read_Byte();
 		DHT11_Data->check_sum = Read_Byte();
 		
-		GPIO_ResetBits(GPIOB,GPIO_Pin_10);
+		GPIO_ResetBits(DHT11_PORT,DHT11_PIN);
 		DHT11_Mode_Out_PP();
-		GPIO_SetBits(GPIOB,GPIO_Pin_10);
+		GPIO_SetBits(DHT11_PORT,DHT11_PIN);
 		
 		if(DHT11_Data->check_sum == DHT11_Data->humi_int + DHT11_Data->humi_deci + DHT11_Data->temp_int+ DHT11_Data->temp_deci)
 		{
-			return 1;
+			return SUCCESS;
 		}else 
-			return 0;//Ê§°Ü
+			return ERROR;//Ê§°Ü
 	}
 	else{
-		return 0;//Ê§°Ü
+		return ERROR;//Ê§°Ü
 	}
 }

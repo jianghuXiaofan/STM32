@@ -17,10 +17,8 @@
 extern u8 USART2_RX_BUF[USART_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
 extern volatile u16 rx_buf_len; //串口2 接收FIFO计数值
 extern volatile u16 USART2_RX_OK_FLAG;//接收完成标志
-extern u8 Temp_BUF[USART_REC_LEN];//临时缓存
 uint16_t num = 0;
-
-int read_buf_len = 0; //读入缓冲区起始位
+volatile int read_buf_len = 0; //读入缓冲区起始位
 /**
 This simple low-level implementation assumes a single connection for a single thread. Thus, a static
 variable is used for that connection.
@@ -77,32 +75,32 @@ int transport_close(void)
 
 //阻塞等待接收完成标志位 清标志位 禁止接收中断 
 //读取数据 清理上一次缓存 使能接收中断
-int my_recv(unsigned char* buf, int len)
-{
-    int i = 0;
-    if (len <= 0)
-        return 0;
-    if (len > USART_REC_LEN)
-        len=USART_REC_LEN - 2;
-    
-    for(i = 0;i<len;i++)
-    {
-        *buf = Temp_BUF[0];//第二缓存区   
-        *buf++;
-        memmove(Temp_BUF,Temp_BUF+1,(USART_REC_LEN-1)*sizeof(*Temp_BUF));//整个数组左移
-        read_buf_len++;
-    }      
-    return len;
-}
+//int my_recv(unsigned char* buf, int len)
+//{
+//    int i = 0;
+//    if (len <= 0)
+//        return 0;
+//    if (len > USART_REC_LEN)
+//        len=USART_REC_LEN - 2;
+//    
+//    for(i = 0;i<len;i++)
+//    {
+//        *buf = Temp_BUF[0];//第二缓存区   
+//        *buf++;
+//        memmove(Temp_BUF,Temp_BUF+1,(USART_REC_LEN-1)*sizeof(*Temp_BUF));//整个数组左移
+//        read_buf_len++;
+//    }      
+//    return len;
+//}
 
-void wait_rx_full(void)//等待接收数据完成
-{
-    while(USART2_RX_OK_FLAG !=1);   //阻塞等待接收完成标志
-    //memcpy(Temp_BUF,USART2_RX_BUF,sizeof(Temp_BUF));
-    USART2_RX_OK_FLAG = 0;          //清完成标志位
-    rx_buf_len = 0;//串口2  接收FIFO重新计数。
-    read_buf_len = 0;
-}
+//void wait_rx_full(void)//等待接收数据完成
+//{
+//    while(USART2_RX_OK_FLAG !=1);   //阻塞等待接收完成标志
+//    //memcpy(Temp_BUF,USART2_RX_BUF,sizeof(Temp_BUF));
+//    USART2_RX_OK_FLAG = 0;          //清完成标志位
+//    rx_buf_len = 0;//串口2  接收FIFO重新计数。
+//    read_buf_len = 0;
+//}
 /****************************************************************************************/
 //请求连接connect --> 请求应答 connack 收到 20 02 00 00
 //订阅请求subscribe --> 订阅应答 SUBACK 收到 90 03 00 01 00

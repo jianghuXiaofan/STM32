@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 void getdata(void);
-
+void suback_msg(unsigned char* buf,int buflen);
+void Reset_receive_buf(void);
 #endif
 

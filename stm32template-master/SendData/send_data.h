@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 void Send_pack(MsgPack *pack);
-
+void Send_pack_data(MsgPack *pack);
 
 #endif
 
