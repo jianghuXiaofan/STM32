@@ -53,7 +53,7 @@ void Usart3_Init(uint32_t baudrate)
      //USART3接收中断组和中断优先级
 	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
     
@@ -68,7 +68,7 @@ void Usart3_Init(uint32_t baudrate)
  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
  	GPIO_Init(GPIOC, &GPIO_InitStructure);
-    RS485_TX_EN(1);//默认接收为0
+    RS485_TX_EN(0);//默认接收为0
 }
 
 void beginSend3(void)

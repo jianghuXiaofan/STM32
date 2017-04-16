@@ -31,23 +31,8 @@ void modbus_rtu_dy(void);
 void modbus_rtu_nz(void);
 void modbus_rtu(void);
 
-extern u8 receCount2;
-extern u8 sendCount2;	 
-extern u8 sendBuf2[32];
-extern u8 sendPosi2;
-extern u8 checkoutError2;
 
-extern u8 modbus_com2_over;
-
-//extern u16 adcval[120];
-//extern u16 nzval[120];
-//extern u8  ad_pos[120];
-extern u8 slaveraddr ;			//从机地址
-extern u8 regstartaddr;		//数据开始储存的地址
-
-
-extern u16 crc16(u8 *puchMsg, u16 usDataLen);
-
+void test_modbus_master_read(void);//测试
 #endif
 
 

@@ -11,12 +11,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 extern u8 USART3_RX_BUF[USART3_REC_LEN];     //接收缓冲,最大USART_REC_LEN个字节.
-extern u8 modbus_com2_over; //接收完成标志
-//extern u8 FLAG_comerr;
+extern volatile u8 modbus_com2_over; //接收完成标志
 
 u8 slaveraddr = 1;			//从机地址 
 u8 regstartaddr = 0;		//数据开始储存的地址
+
+extern u8 receCount2;
+extern u8 sendCount2;	 
+extern u8 sendBuf2[32];
+extern u8 sendPosi2;
+extern u8 checkoutError2;
+extern volatile u8 modbus_com2_over;
 
 
 const u8 auchCRCHi[] = { 
@@ -212,24 +219,31 @@ void modbus_rtu_dy(void) //电压读取命令
     u16 data_save[20];
     memset(data_save,0,sizeof(data_save));
     slaveraddr = 0x02;
-
-RE_read:
+//RE_RUN:
 	rtu_read_hldreg(slaveraddr,sendBuf2,0,1);//读取多个，怎么处理？
+    printf("Senddata: ");
+    for(int i=0;i<8;i++)
+        printf("%02x ",sendBuf2[i]);
+    printf("\r\n");
     delay_ms(1000);
+    delay_ms(1000);delay_ms(1000);delay_ms(1000);
+    delay_ms(1000);
+    printf("modbus_com2_over=%d,slaveraddr=%d,USART3_RX_BUF=%d\r\n",modbus_com2_over,slaveraddr,USART3_RX_BUF[0]);
     
-    if(modbus_com2_over ==2&&USART3_RX_BUF[0] == slaveraddr)//上次发送地址的回文
+    if(modbus_com2_over ==2&& USART3_RX_BUF[0] == slaveraddr)//上次发送地址的回文
 	{
         modbus_com2_over = 0;
-        printf("\r\nUSART3_RX_BUF =\r\n");
+//        printf("\r\nUSART3_RX_BUF =\r\n");
 		if( -1 == rtu_data_anlys(data_save,USART3_RX_BUF,0,12))//校验等出错
         {
             memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
-            goto RE_read; //goto 语句跳转
+            //goto RE_RUN;
         }            
 	}
     else if(modbus_com2_over!=2 || USART3_RX_BUF[0] != slaveraddr)
 	{
 		receCount2=0;
+        memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
 	}
     
     for(int i = 0;i<5;i++)
@@ -239,7 +253,78 @@ RE_read:
     //slaveraddr++;
 }
 
-
+void test_modbus_master_read(void)
+{
+    //温度、湿度、大气压 一个地址3个寄存器
+	//风速 一个地址，一个寄存器
+	//风向 一个地址，一个寄存器
+	int slaveraddr = 0x02;
+	//int startaddr = 0;
+    //int reg_num = 0;
+	uint16_t data_save[20];
+    memset(data_save,0,sizeof(data_save));
+	
+    
+    for(int i = 1;i < 3;i++)
+	{
+		switch(i+1)
+		{
+			case 1://
+//				rtu_read_hldreg(slaveraddr,sendBuf2,0,1);
+//				rtu_data_anlys(&data_save[0],USART3_RX_BUF,0,12);
+//				
+//				rtu_read_hldreg(slaveraddr,sendBuf2,1,1);
+//				rtu_data_anlys(&data_save[1],USART3_RX_BUF,0,12);
+//				
+//				rtu_read_hldreg(slaveraddr,sendBuf2,2,1);
+//				rtu_data_anlys(&data_save[2],USART3_RX_BUF,0,12);
+				break;
+			case 2:
+                rtu_read_hldreg(slaveraddr,sendBuf2,0,1);
+                delay_ms(1000);
+                
+                if(modbus_com2_over ==2&&USART3_RX_BUF[0] == slaveraddr)//上次发送地址的回文
+                {
+                    modbus_com2_over = 0;
+                    if( -1 == rtu_data_anlys(&data_save[3],USART3_RX_BUF,0,12))//校验等出错
+                    {
+                        memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
+                        receCount2=0;
+                    }                    
+                }
+                else if(modbus_com2_over!=2 || USART3_RX_BUF[0] != slaveraddr)
+                {
+                    receCount2=0;
+                    memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
+                }
+				break;
+			case 3:
+                rtu_read_hldreg(slaveraddr,sendBuf2,0,1);
+                delay_ms(1000);
+                
+                if(modbus_com2_over ==2&&USART3_RX_BUF[0] == slaveraddr)//上次发送地址的回文
+                {
+                    modbus_com2_over = 0;
+                    if( -1 == rtu_data_anlys(&data_save[4],USART3_RX_BUF,0,12))//校验等出错
+                    {
+                        receCount2=0;
+                        memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存   
+                    }                    
+                }
+                else if(modbus_com2_over!=2 || USART3_RX_BUF[0] != slaveraddr)
+                {
+                    receCount2=0;
+                    memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
+                }
+			default: ;	
+		}
+		slaveraddr++;
+	}
+    
+    printf("\r\n");
+    for(int i = 0;i<10;i++)
+    printf(" %d ",data_save[i]);
+}
 
 
 

@@ -34,7 +34,7 @@ void Usart1_Init(uint32_t baudrate)
     //USART1接收中断 组和中断优先级
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
     
@@ -57,7 +57,6 @@ int fputc(int ch, FILE *f)
 		return (ch);
 }
 
-
 /// 重定向c库函数scanf到USART1
 int fgetc(FILE *f)
 {
@@ -78,6 +77,8 @@ void USART1_IRQHandler(void)
 	  	printf( "%c", ch );    //将接受到的数据直接返回打印
 	} 
 }
+
+
 
 
 

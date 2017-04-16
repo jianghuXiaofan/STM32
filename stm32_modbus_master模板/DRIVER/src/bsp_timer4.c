@@ -1,6 +1,6 @@
 #include "bsp_timer4.h"
 
-u8 modbus_com2_over = 0; //发送完成标志
+volatile u8 modbus_com2_over = 0; //发送完成标志
 
 void TIM4_Int_Init(u16 arr,u16 psc)
 {
