@@ -6,9 +6,12 @@
 #include "bsp_usart3.h"
 #include "bsp_modbus.h"
 #include "bsp_timer4.h"
-
+#include "string.h"
 int main(void)
 {   
+    uint32_t slaveraddr = 0x02;
+    uint16_t data_save[20];
+    
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);//中断组设置
     SysTick_Init();    
     led_Init();
@@ -18,19 +21,15 @@ int main(void)
     
     for( ;; )
     {
+        memset(data_save,0,sizeof(data_save));
+        //读取从机寄存器值03指令
+        modbus_master_read(slaveraddr,0,1,data_save);
         LED0(ON);
-        //modbus_rtu_dy();
-        test_modbus_master_read();
+        delay_ms(1000);
         delay_ms(1000);
         LED0(OFF);
         delay_ms(1000);
     }
-    //读取第一个从机的 保存到结构体 
-        //读取第二个从机的，保存到结构体
-        //读取第三个从机的，三个寄存器的值保存到结构体
-//    rtu_read_hldreg(slaveraddr,sendBuf2,0,1);
-//    rtu_data_anlys(data_save,USART3_RX_BUF,0,12);
-   
 }
 
 

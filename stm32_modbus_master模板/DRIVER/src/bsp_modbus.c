@@ -3,7 +3,6 @@
 *	主机服务程序
 *
 */
-
 #include "bsp_modbus.h"
 #include "timer.h"
 #include "bsp_timer4.h"
@@ -99,7 +98,7 @@ void construct_rtu_frm ( u8 *dst_buf,u8 *src_buf,u8 lenth)
 
 /*
 *   作用：读保持寄存器 03
-*   参数：从机地址、缓存区、起始地址、读取长度
+*   参数：从机地址、缓存区起始地址、从机寄存器起始地址、要读取寄存器的长度
 */
 u16  rtu_read_hldreg ( u8 board_adr,u8 *com_buf,u16 start_address,u16 lenth) //03
 {
@@ -142,7 +141,7 @@ u16 rtu_set_hldreg( u8 board_adr,u8 *com_buf, u16 start_address, u16 value ) //0
 
 /*
 *   作用：解析函数(校验、区分不同功能码)
-*   参数：解析后数据存放、接收缓存区、起始地址、长度(校验位数)貌似
+*   参数：解析后数据存放、接收缓存区、起始地址、长度(校验位数)(需要校验的长度起始位+数据段+停止位=10)
 */
 int rtu_data_anlys( u16  *dest_p, u8 *source_p, u16 data_start_address, u16 fr_lenth)//rtu 接收分析//
 {
@@ -213,210 +212,34 @@ int rtu_data_anlys( u16  *dest_p, u8 *source_p, u16 data_start_address, u16 fr_l
 }
 
 
-//可变量：从机地址、起始地址、寄存器数量、结果存放
-void modbus_rtu_dy(void) //电压读取命令
+
+//从机地址、从机寄存器起始地址、寄存器长度、缓存数据的地址
+void modbus_master_read(uint8_t slaveraddr,u16 start_address,u16 lenth,uint16_t * save_buff)   
 {
-    u16 data_save[20];
-    memset(data_save,0,sizeof(data_save));
-    slaveraddr = 0x02;
-//RE_RUN:
-	rtu_read_hldreg(slaveraddr,sendBuf2,0,1);//读取多个，怎么处理？
-    printf("Senddata: ");
-    for(int i=0;i<8;i++)
-        printf("%02x ",sendBuf2[i]);
-    printf("\r\n");
-    delay_ms(1000);
-    delay_ms(1000);delay_ms(1000);delay_ms(1000);
-    delay_ms(1000);
-    printf("modbus_com2_over=%d,slaveraddr=%d,USART3_RX_BUF=%d\r\n",modbus_com2_over,slaveraddr,USART3_RX_BUF[0]);
-    
-    if(modbus_com2_over ==2&& USART3_RX_BUF[0] == slaveraddr)//上次发送地址的回文
-	{
+    rtu_read_hldreg(slaveraddr,sendBuf2,start_address,lenth);  
+    delay_ms(200);//确保接收完成
+//    printf("\nmodbus_com_over=%d,USART_RX_BUF=%d\n",modbus_com2_over,USART3_RX_BUF[0]);
+//    printf("\r\n");
+//    for(int i = 0;i<10;i++)
+    //printf(" %02x ",USART3_RX_BUF[i]);
+    if(modbus_com2_over ==2&&USART3_RX_BUF[0] == slaveraddr)//上次发送地址的回文
+    {
         modbus_com2_over = 0;
-//        printf("\r\nUSART3_RX_BUF =\r\n");
-		if( -1 == rtu_data_anlys(data_save,USART3_RX_BUF,0,12))//校验等出错
+        if( -1 == rtu_data_anlys(save_buff,USART3_RX_BUF,0,10))//校验等出错
         {
+            receCount2=0;
             memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
-            //goto RE_RUN;
-        }            
-	}
+            memset(save_buff,0,lenth); 
+        }                    
+    }
     else if(modbus_com2_over!=2 || USART3_RX_BUF[0] != slaveraddr)
-	{
-		receCount2=0;
+    {       
+        modbus_com2_over = 0;
+        receCount2=0;
         memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
-	}
-    
-    for(int i = 0;i<5;i++)
-        printf("* = %d ",data_save[i]);
-    printf("\r\n");
-    
-    //slaveraddr++;
+        memset(save_buff,0,lenth);
+    }
 }
-
-void test_modbus_master_read(void)
-{
-    //温度、湿度、大气压 一个地址3个寄存器
-	//风速 一个地址，一个寄存器
-	//风向 一个地址，一个寄存器
-	int slaveraddr = 0x02;
-	//int startaddr = 0;
-    //int reg_num = 0;
-	uint16_t data_save[20];
-    memset(data_save,0,sizeof(data_save));
-	
-    
-    for(int i = 1;i < 3;i++)
-	{
-		switch(i+1)
-		{
-			case 1://
-//				rtu_read_hldreg(slaveraddr,sendBuf2,0,1);
-//				rtu_data_anlys(&data_save[0],USART3_RX_BUF,0,12);
-//				
-//				rtu_read_hldreg(slaveraddr,sendBuf2,1,1);
-//				rtu_data_anlys(&data_save[1],USART3_RX_BUF,0,12);
-//				
-//				rtu_read_hldreg(slaveraddr,sendBuf2,2,1);
-//				rtu_data_anlys(&data_save[2],USART3_RX_BUF,0,12);
-				break;
-			case 2:
-                rtu_read_hldreg(slaveraddr,sendBuf2,0,1);
-                delay_ms(1000);
-                
-                if(modbus_com2_over ==2&&USART3_RX_BUF[0] == slaveraddr)//上次发送地址的回文
-                {
-                    modbus_com2_over = 0;
-                    if( -1 == rtu_data_anlys(&data_save[3],USART3_RX_BUF,0,12))//校验等出错
-                    {
-                        memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
-                        receCount2=0;
-                    }                    
-                }
-                else if(modbus_com2_over!=2 || USART3_RX_BUF[0] != slaveraddr)
-                {
-                    receCount2=0;
-                    memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
-                }
-				break;
-			case 3:
-                rtu_read_hldreg(slaveraddr,sendBuf2,0,1);
-                delay_ms(1000);
-                
-                if(modbus_com2_over ==2&&USART3_RX_BUF[0] == slaveraddr)//上次发送地址的回文
-                {
-                    modbus_com2_over = 0;
-                    if( -1 == rtu_data_anlys(&data_save[4],USART3_RX_BUF,0,12))//校验等出错
-                    {
-                        receCount2=0;
-                        memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存   
-                    }                    
-                }
-                else if(modbus_com2_over!=2 || USART3_RX_BUF[0] != slaveraddr)
-                {
-                    receCount2=0;
-                    memset(USART3_RX_BUF,0,sizeof(USART3_RX_BUF));//清空缓存
-                }
-			default: ;	
-		}
-		slaveraddr++;
-	}
-    
-    printf("\r\n");
-    for(int i = 0;i<10;i++)
-    printf(" %d ",data_save[i]);
-}
-
-
-
-
-
-
-//	regstartaddr=regstartaddr+10;
-//	if(slaveraddr > boardnum) //轮询11个地址 不超过
-//	{
-//		//FLAG_caiji=1;
-//		slaveraddr=1;
-//		regstartaddr=0;
-//	}//发命令
-    //解析命令
-//	if(modbus_com2_over==2&&USART3_RX_BUF[0]==11) //上次遗留的
-//	{
-//		modbus_com2_over=0;//串口2发送完成
-//		//rtu_data_anlys(nzval,USART3_RX_BUF,100,25);		
-//	}
-//	else if(modbus_com2_over==2&&USART3_RX_BUF[0]+1==slaveraddr)//??12 0C 0000_1100//上次发送地址的回文
-//	{
-//		modbus_com2_over=0;
-//		//rtu_data_anlys(adcval,USART3_RX_BUF,regstartaddr-10,25);		
-//	}
-//	else if(modbus_com2_over!=2 || USART3_RX_BUF[0]+1 != slaveraddr)
-//	{
-//		//FLAG_comerr=1;
-//		receCount2=0;
-//	}
-
-
-
-
-//u16  rtu_neizu_order ( u8 board_adr,u8 *com_buf,u16 start_address,u16 lenth) //开启内阻采集命令//
-//{
-//    unsigned char tmp[32], tmp_lenth;  
-//    tmp[0] = board_adr;
-//	tmp[1] = NEIZU_CAIJI;
-//	tmp[2] = HI(start_address);
-//	tmp[3] = LOW(start_address);
-//	tmp[4] = HI(lenth);
-//	tmp[5] = LOW(lenth);   
-//    tmp_lenth = 6;
-//    construct_rtu_frm ( com_buf,tmp,tmp_lenth);
-//	sendCount2=8;
-//	beginSend3();
-//    return 8;
-//}
-
-
-//void modbus_rtu_nz(void)	//内阻读取命令
-//{
-//	if(modbus_com2_over==2&&receBuf2[0]==11)
-//	{
-//		modbus_com2_over=0;
-//		rtu_data_anlys(adcval,receBuf2,100,25);		
-//	}
-//	else if(modbus_com2_over==2&&receBuf2[0]+1==slaveraddr)
-//	{
-//		modbus_com2_over=0;
-//		rtu_data_anlys(nzval,receBuf2,regstartaddr-10,25); 
-//	}
-//	else if(modbus_com2_over!=2 || receBuf[0]+1 != slaveraddr)
-//	{
-//		FLAG_comerr=1;
-//		receCount2=0;
-//	}
-//	rtu_read_hldreg(slaveraddr,sendBuf2,16,10);
-//	slaveraddr++;
-//	regstartaddr=regstartaddr+10;
-//	if(slaveraddr>boardnum)//11以内查询
-//	{
-//		FLAG_caiji=0;
-//		slaveraddr=1;
-//		regstartaddr=0;
-//	}
-//}
-
-//void modbus_rtu(void)  //数据采集命令
-//{
-//	if(FLAG_caiji==0)
-//	{modbus_rtu_dy();}
-//	else
-//	{modbus_rtu_nz();}
-//}
-
-
-
-
-
-
-
 
 
 

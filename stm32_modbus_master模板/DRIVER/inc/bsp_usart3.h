@@ -6,9 +6,9 @@
 
 #define USART3_REC_LEN  			512  	//定义最大接收字节数 512
 //PC9 
-#define RS485_TX_EN(n)  if(n) GPIO_SetBits(GPIOC,GPIO_Pin_9); \
+#define RS485_TX_EN(n)  if(n) GPIO_SetBits(GPIOA,GPIO_Pin_8); \
                         else \
-						GPIO_ResetBits(GPIOC,GPIO_Pin_9)
+						GPIO_ResetBits(GPIOA,GPIO_Pin_8)
                         
 
                         

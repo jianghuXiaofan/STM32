@@ -33,6 +33,8 @@ void modbus_rtu(void);
 
 
 void test_modbus_master_read(void);//≤‚ ‘
+
+void modbus_master_read(uint8_t slaveraddr,u16 start_address,u16 lenth,uint16_t * save_buff);
 #endif
 
 

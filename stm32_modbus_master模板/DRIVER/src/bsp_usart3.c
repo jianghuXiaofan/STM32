@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "timer.h"
 /////////////////////////////////////////////////////////
 
   	
@@ -53,7 +53,7 @@ void Usart3_Init(uint32_t baudrate)
      //USART3接收中断组和中断优先级
 	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
     
@@ -63,11 +63,11 @@ void Usart3_Init(uint32_t baudrate)
 	USART_Cmd(USART3,ENABLE);
     
     
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);//使能GPIOA时钟 485控制引脚
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;				 //PA8端口配置
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);//使能GPIOA时钟 485控制引脚
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;				 //PA8端口配置
  	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
  	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
- 	GPIO_Init(GPIOC, &GPIO_InitStructure);
+ 	GPIO_Init(GPIOA, &GPIO_InitStructure);
     RS485_TX_EN(0);//默认接收为0
 }
 
@@ -90,15 +90,16 @@ void USART3_IRQHandler(void)
         USART3_RX_BUF[receCount2] = USART_ReceiveData(USART3);
         printf( "%02x ", USART3_RX_BUF[receCount2] );    //将接受到的数据直接返回打印
 	    receCount2++;          //接收地址偏移寄存器加1
-        TIM4_Enable();//启动超时        
+        TIM4_Enable();//启动超时      
 	}
     else if(USART_GetITStatus(USART3,USART_IT_TC) != RESET)//发送中断
     {
         USART_ClearFlag(USART3,USART_FLAG_TC);
         if(sendPosi2 < sendCount2)
 	    {
-	        sendPosi2++;//发送信号量
+            sendPosi2++;//发送信号量
 	        USART_SendData(USART3,sendBuf2[sendPosi2]);//发送的是modbus master的命令
+            while(USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET );
 	    }
 	    else
 	    {
